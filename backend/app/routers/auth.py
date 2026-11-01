@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models.user import User
 from backend.app.schemas.auth import UserRegisterRequest, UserLoginRequest, UserOut, TokenResponse
-from backend.app.services.auth_service import register_user, login_user, get_user_out
+from backend.app.services.auth_service import register_user, login_user, get_user_out, delete_user
 from backend.app.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -19,6 +19,10 @@ def login(req: UserLoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return get_user_out(db, current_user)
+
+@router.delete("/me", status_code=status.HTTP_200_OK)
+def delete_account(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return delete_user(db, current_user)
 
 @router.post("/logout")
 def logout():

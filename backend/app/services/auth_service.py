@@ -94,3 +94,9 @@ def get_user_out(db: Session, user: User) -> UserOut:
         is_verified=user.is_verified,
         pharmacy_id=pharmacy.id if pharmacy else None,
     )
+
+def delete_user(db: Session, user: User) -> dict:
+    user_email = user.email
+    db.delete(user)
+    db.commit()
+    return {"success": True, "message": f"Account {user_email} deleted successfully"}
