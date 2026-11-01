@@ -86,14 +86,14 @@ export const PharmacistLayout = ({ activeTab, setActiveTab, onSwitchToCustomer, 
       >
         <div className="p-4 flex flex-col h-full overflow-y-auto">
           {/* Logo & Pharmacy Badge */}
-          <div className="hidden md:flex items-center gap-3 px-2 py-3 mb-4 border-b border-slate-800">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/20 flex-shrink-0">
-              🛡️
+          <div className="hidden md:flex items-center gap-3 px-2 py-3 mb-4 border-b border-slate-800 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-glow flex-shrink-0">
+              <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div className="overflow-hidden">
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-base tracking-tight">MedGuard</span>
-                <span className="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-500/30">AI</span>
+                <span className="bg-teal-500/20 text-teal-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-teal-500/30">AI</span>
               </div>
               <p className="text-[11px] text-slate-400 truncate">{pharmacy?.name || 'Care Pharmacy'}</p>
             </div>

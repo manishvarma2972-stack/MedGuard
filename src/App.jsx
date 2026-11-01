@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { PharmacyProvider, usePharmacy } from './context/PharmacyContext';
+import { LandingPage } from './components/landing/LandingPage';
 import { CustomerDiscovery } from './components/customer/CustomerDiscovery';
 import { PharmacistLogin } from './components/auth/PharmacistLogin';
 import { PharmacistRegister } from './components/auth/PharmacistRegister';
@@ -40,7 +41,7 @@ const PharmacistPortal = ({ activeTab }) => {
     <PharmacistLayout
       activeTab={activeTab}
       setActiveTab={handleTabChange}
-      onSwitchToCustomer={() => navigate('/')}
+      onSwitchToCustomer={() => navigate('/search')}
     >
       {activeTab === 'dashboard' && (
         <Dashboard setActiveTab={handleTabChange} />
@@ -101,8 +102,12 @@ export default function App() {
     <PharmacyProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Customer Route (Zero Login Required) */}
-          <Route path="/" element={<CustomerDiscovery />} />
+          {/* Public Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Public Customer Medicine Search & Radar (Zero Login Required) */}
+          <Route path="/search" element={<CustomerDiscovery />} />
+          <Route path="/find-medicine" element={<CustomerDiscovery />} />
 
           {/* Pharmacist Authentication Routes */}
           <Route path="/pharmacist/login" element={<PharmacistLogin />} />

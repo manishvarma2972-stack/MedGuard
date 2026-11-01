@@ -13,12 +13,17 @@ export default defineConfig(({ mode }) => {
       allowedHosts: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8000',
+          target: env.VITE_BACKEND_TARGET || 'https://medguard-d48g.onrender.com',
           changeOrigin: true,
+          secure: true,
+          headers: {
+            Origin: 'https://medguard-frontend.onrender.com',
+          },
         },
         '/storage': {
-          target: 'http://localhost:8000',
+          target: env.VITE_BACKEND_TARGET || 'https://medguard-d48g.onrender.com',
           changeOrigin: true,
+          secure: true,
         },
       }
     },

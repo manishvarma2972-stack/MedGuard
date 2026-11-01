@@ -9,8 +9,13 @@ import {
   AlertCircle, 
   CheckCircle2,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Sparkles,
+  ChevronLeft,
+  Building2
 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 export const PharmacistRegister = () => {
   const navigate = useNavigate();
@@ -99,201 +104,266 @@ export const PharmacistRegister = () => {
         setResendNotice({ type: 'success', text: 'Verification email sent. Please check your inbox.' });
       }
     } catch (err) {
-      setResendNotice({ type: 'error', text: err.message || 'Failed to resend verification email.' });
+      setResendNotice({ type: 'error', text: err.message || 'Failed to resend email.' });
     } finally {
       setResending(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex w-14 h-14 rounded-2xl bg-blue-600 text-white items-center justify-center font-bold text-2xl shadow-xl shadow-blue-500/20 mb-3">
-          🛡️
-        </div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">
-          Create Pharmacist Account
-        </h1>
-        <p className="mt-1 text-xs text-slate-400">
-          Account Registration • Step 1 of 4
-        </p>
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center">
+      <div className="min-h-screen flex flex-col lg:flex-row">
+        
+        {/* Left Side: Brand Visual (Desktop Split Layout) */}
+        <div className="hidden lg:flex lg:w-1/2 bg-slate-900 text-white p-12 flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-800 border border-slate-700/60 py-8 px-6 shadow-2xl rounded-2xl sm:px-10 text-white">
-          
-          {errorMessage && (
-            <div className="mb-5 bg-rose-500/20 border border-rose-500/30 text-rose-200 text-xs p-3.5 rounded-xl flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-              <span>{errorMessage}</span>
+          {/* Top Logo */}
+          <div className="relative z-10 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-teal-500 text-white flex items-center justify-center font-bold text-2xl shadow-glow">
+              <ShieldCheck className="w-6 h-6 text-white" />
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-            {/* Full Name */}
             <div>
-              <label className="block font-medium text-slate-300 mb-1">
-                Full Name / Pharmacist Name *
-              </label>
-              <div className="relative">
-                <UserCheck className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Dr. Rajesh Sharma"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
+              <span className="font-extrabold text-xl tracking-tight text-white">MEDGUARD</span>
+              <span className="ml-1.5 bg-teal-500/20 text-teal-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-teal-400/30">
+                AI
+              </span>
+            </div>
+          </div>
+
+          {/* Highlights */}
+          <div className="relative z-10 space-y-6 max-w-md">
+            <div>
+              <span className="text-xs uppercase font-extrabold tracking-widest text-teal-400">
+                Pharmacy Onboarding
+              </span>
+              <h2 className="text-3xl font-extrabold text-white tracking-tight mt-2 leading-tight">
+                Modernize your medicine counter in under 3 minutes
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Join licensed community pharmacies using MedGuard AI for automated stock inwarding, FEFO sales, and local customer visibility.
+              </p>
+            </div>
+
+            <div className="space-y-3.5 pt-2">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-slate-300 font-medium">Automatic Blister Strip Vision AI Scanning</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-slate-300 font-medium">Zero Waste FEFO Priority Billing</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-slate-300 font-medium">Loose Tablet vs. Strip Conversion POS</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span className="text-xs text-slate-300 font-medium">Live Customer Medicine Radar Discovery</span>
               </div>
             </div>
+          </div>
 
-            {/* Email */}
-            <div>
-              <label className="block font-medium text-slate-300 mb-1">
-                Email Address *
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="pharmacist@example.com"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
+          {/* Bottom Step Indicator */}
+          <div className="relative z-10 border-t border-slate-800 pt-6">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                1
+              </span>
+              <span className="font-semibold text-white">Step 1: Pharmacist Registration</span>
+              <span className="text-slate-600">→</span>
+              <span className="text-slate-500">Step 2: Pharmacy Details & Location</span>
             </div>
-
-            {/* Mobile Number */}
-            <div>
-              <label className="block font-medium text-slate-300 mb-1">
-                Mobile Number (10 digits) *
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="tel"
-                  required
-                  value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
-                  placeholder="9876543210"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block font-medium text-slate-300 mb-1">
-                Password * (min. 6 characters)
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block font-medium text-slate-300 mb-1">
-                Confirm Password *
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Registration button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <span>{loading ? 'Creating Account & Sending Email...' : 'Create Pharmacist Account'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-
-          {/* Links */}
-          <div className="mt-6 pt-5 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
-            <span className="text-slate-400">
-              Already have an account?{' '}
-              <Link to="/pharmacist/login" className="text-blue-400 hover:text-blue-300 font-semibold underline ml-1">
-                Sign In
-              </Link>
-            </span>
-
-            <Link to="/" className="hover:text-slate-200">
-              ← Customer Radar
-            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Account Created Modal */}
-      {showVerifyModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-white space-y-4 shadow-2xl text-center">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto">
-              <Mail className="w-6 h-6" />
+        {/* Right Side: Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+          <div className="w-full max-w-md space-y-6">
+            
+            {/* Mobile Header */}
+            <div className="lg:hidden flex items-center justify-between pb-4 border-b border-slate-200">
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                  🛡️
+                </div>
+                <span className="font-extrabold text-slate-900 tracking-tight">MedGuard AI</span>
+              </div>
+              <button
+                onClick={() => navigate('/')}
+                className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Home</span>
+              </button>
             </div>
 
-            <h2 className="text-lg font-extrabold text-white">
-              Account Created
-            </h2>
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                Step 1 of 2
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Create Pharmacist Account
+              </h1>
+              <p className="text-sm text-slate-500">
+                Register as a pharmacist to set up your store and inventory.
+              </p>
+            </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Your account has been created. Please check your email{registeredEmail ? ` (${registeredEmail})` : ''} and click the verification link to verify your account before continuing.
-            </p>
+            {errorMessage && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-3.5 rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              <Input
+                label="Full Name / Pharmacist Name *"
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Dr. Rajesh Sharma"
+                icon={UserCheck}
+              />
+
+              <Input
+                label="Email Address *"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="pharmacist@yourpharmacy.com"
+                icon={Mail}
+              />
+
+              <Input
+                label="Mobile Number (10 digits) *"
+                type="tel"
+                required
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="9876543210"
+                icon={Phone}
+              />
+
+              <Input
+                label="Password (min. 6 characters) *"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                icon={Lock}
+              />
+
+              <Input
+                label="Confirm Password *"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••••••"
+                icon={Lock}
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={loading}
+                icon={ArrowRight}
+                className="w-full shadow-glow font-bold mt-4"
+              >
+                Create Account & Proceed
+              </Button>
+            </form>
+
+            <div className="pt-4 border-t border-slate-200 text-center space-y-2">
+              <p className="text-xs text-slate-600">
+                Already registered?{' '}
+                <Link to="/pharmacist/login" className="font-bold text-blue-600 hover:text-blue-700 underline">
+                  Sign In
+                </Link>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Are you a patient looking for medicine?{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/search')}
+                  className="font-medium text-teal-600 hover:underline"
+                >
+                  Find Medicine
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Verification Success / Setup Next Step Modal */}
+      {showVerifyModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-bold text-slate-900 text-lg">Account Created Successfully!</h3>
+              <p className="text-xs text-slate-600">
+                Welcome to MedGuard AI, <strong>{fullName}</strong>.
+              </p>
+            </div>
+
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 text-left space-y-1">
+              <p className="font-semibold text-slate-800">Next Step: Pharmacy Profile & GPS Location</p>
+              <p className="text-[11px] text-slate-500">
+                Set up your pharmacy name, license number, and map pin so customers nearby can discover your medicine inventory.
+              </p>
+            </div>
 
             {resendNotice && (
-              <div className={`p-3 rounded-xl text-xs flex items-center justify-center gap-2 ${
-                resendNotice.type === 'success' 
-                  ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-300' 
-                  : 'bg-rose-500/20 border border-rose-500/30 text-rose-300'
-              }`}>
-                {resendNotice.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                )}
+              <div
+                className={`p-3 text-xs rounded-xl border flex items-center gap-2 ${
+                  resendNotice.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border-rose-200'
+                }`}
+              >
                 <span>{resendNotice.text}</span>
               </div>
             )}
 
-            <div className="space-y-2 pt-2">
-              <button
-                type="button"
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                variant="primary"
+                size="md"
                 onClick={handleModalOk}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                icon={ArrowRight}
+                className="w-full shadow-glow font-bold"
               >
-                <span>Proceed to Pharmacy Setup →</span>
-              </button>
-
+                Proceed to Pharmacy Setup
+              </Button>
               <button
                 type="button"
-                disabled={resending}
                 onClick={handleResend}
-                className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-slate-200 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                disabled={resending}
+                className="text-xs text-slate-500 hover:text-slate-800 underline py-1"
               >
-                <span>{resending ? 'Sending...' : 'Resend Verification Email'}</span>
+                {resending ? 'Sending...' : 'Resend Verification Email'}
               </button>
             </div>
           </div>

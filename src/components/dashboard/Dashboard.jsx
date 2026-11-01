@@ -18,7 +18,16 @@ import {
 import { generateInvoicePdf } from '../../utils/pdfGenerator';
 
 export const Dashboard = ({ setActiveTab }) => {
-  const { pharmacy, metrics, sales } = usePharmacy();
+  const { pharmacy, metrics, sales, profile } = usePharmacy();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const pharmacistName = profile?.full_name || pharmacy?.owner_name || 'Pharmacist';
 
   const handleDownloadInvoice = (sale) => {
     try {
@@ -46,11 +55,11 @@ export const Dashboard = ({ setActiveTab }) => {
           <div className="flex items-center gap-2">
             <span className="text-xl">👋</span>
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              Welcome to {pharmacy?.name || 'MedGuard AI'}
+              {getGreeting()}, {pharmacistName}
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Real-time FEFO inventory monitoring, AI packaging extraction, and public discovery sync.
+            Here's what's happening with your pharmacy today across inventory, sales, and expiry.
           </p>
         </div>
 

@@ -45,9 +45,17 @@ app = FastAPI(
 )
 
 # Enable CORS for frontend applications
+cors_allowed = list(dict.fromkeys(
+    (settings.cors_origins_list or []) + [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://medguard-frontend.onrender.com",
+    ]
+))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list or ["*"],
+    allow_origins=cors_allowed,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

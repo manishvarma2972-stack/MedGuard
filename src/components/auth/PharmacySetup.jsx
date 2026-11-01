@@ -11,10 +11,35 @@ import {
   FileText, 
   ArrowRight, 
   AlertCircle, 
-  CheckCircle2,
-  ShieldCheck,
-  Building
+  CheckCircle2, 
+  ShieldCheck, 
+  AlertTriangle 
 } from 'lucide-react';
+
+const checkCityCoordinateConsistency = (cityStr, latVal, lngVal) => {
+  if (!cityStr || latVal === null || lngVal === null) return null;
+  const c = cityStr.trim().toLowerCase();
+
+  // Hyderabad: roughly lat 16.5 - 18.0, lng 77.8 - 79.2
+  if (c.includes('hyderabad') || c.includes('secunderabad')) {
+    if (latVal < 16.5 || latVal > 18.2 || lngVal < 77.5 || lngVal > 79.5) {
+      return `Your address specifies "${cityStr}", but the selected map coordinates (${latVal.toFixed(4)}, ${lngVal.toFixed(4)}) appear to be outside the Hyderabad region. Please position your map pin within your actual city.`;
+    }
+  }
+  // Bengaluru: roughly lat 12.5 - 13.5, lng 77.0 - 78.2
+  if (c.includes('bengaluru') || c.includes('bangalore')) {
+    if (latVal < 12.5 || latVal > 13.5 || lngVal < 77.0 || lngVal > 78.2) {
+      return `Your address specifies "${cityStr}", but the selected map coordinates (${latVal.toFixed(4)}, ${lngVal.toFixed(4)}) appear to be outside the Bengaluru region. Please position your map pin within your actual city.`;
+    }
+  }
+  // Visakhapatnam: roughly lat 17.2 - 18.2, lng 82.8 - 83.8
+  if (c.includes('visakhapatnam') || c.includes('vizag')) {
+    if (latVal < 17.2 || latVal > 18.2 || lngVal < 82.8 || lngVal > 83.8) {
+      return `Your address specifies "${cityStr}", but the selected map coordinates (${latVal.toFixed(4)}, ${lngVal.toFixed(4)}) appear to be outside the Visakhapatnam region.`;
+    }
+  }
+  return null;
+};
 
 export const PharmacySetup = () => {
   const navigate = useNavigate();
@@ -46,13 +71,16 @@ export const PharmacySetup = () => {
   const [pincode, setPincode] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
 
-  // Location State
-  const [latitude, setLatitude] = useState(12.9719);
-  const [longitude, setLongitude] = useState(77.6412);
-  const [isLocationConfirmed, setIsLocationConfirmed] = useState(false);
+  // Location State: Starts as NULL so no arbitrary city coordinates are silently used!
+  const [latitude, setLatitude] = useState(pharmacy?.latitude ?? null);
+  const [longitude, setLongitude] = useState(pharmacy?.longitude ?? null);
+  const [isLocationConfirmed, setIsLocationConfirmed] = useState(!!pharmacy?.latitude);
+  const [confirmedAddressSnapshot, setConfirmedAddressSnapshot] = useState(null);
+  const [addressInvalidatedWarning, setAddressInvalidatedWarning] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [cityMismatchWarning, setCityMismatchWarning] = useState(null);
 
   useEffect(() => {
     if (profile?.full_name && !ownerName) setOwnerName(profile.full_name);
@@ -60,9 +88,41 @@ export const PharmacySetup = () => {
     if (user?.email && !email) setEmail(user.email);
   }, [profile, user]);
 
+  // Check city consistency when city or coordinates change
+  useEffect(() => {
+    const warning = checkCityCoordinateConsistency(city, latitude, longitude);
+    setCityMismatchWarning(warning);
+  }, [city, latitude, longitude]);
+
+  // Invalidate previous location confirmation if address details change after confirmation
+  useEffect(() => {
+    if (confirmedAddressSnapshot && isLocationConfirmed) {
+      const isAddressChanged = 
+        fullAddress.trim() !== confirmedAddressSnapshot.fullAddress ||
+        city.trim() !== confirmedAddressSnapshot.city ||
+        state.trim() !== confirmedAddressSnapshot.state ||
+        pincode.trim() !== confirmedAddressSnapshot.pincode;
+
+      if (isAddressChanged) {
+        setIsLocationConfirmed(false);
+        setLatitude(null);
+        setLongitude(null);
+        setAddressInvalidatedWarning(true);
+      }
+    }
+  }, [fullAddress, city, state, pincode, confirmedAddressSnapshot, isLocationConfirmed]);
+
   const handleLocationConfirmed = (coords) => {
     setLatitude(coords.latitude);
     setLongitude(coords.longitude);
+    setIsLocationConfirmed(true);
+    setAddressInvalidatedWarning(false);
+    setConfirmedAddressSnapshot({
+      fullAddress: fullAddress.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -90,15 +150,38 @@ export const PharmacySetup = () => {
       setErrorMessage('Please provide the Drug License Number (e.g. DL-KA-2026-XXXX).');
       return;
     }
+
+    // Strict Coordinate Validations
+    if (latitude === null || longitude === null || isNaN(latitude) || isNaN(longitude)) {
+      setErrorMessage('Please select and confirm your physical pharmacy coordinates on the map in Step 3 before saving.');
+      return;
+    }
+
+    if (latitude < -90 || latitude > 90) {
+      setErrorMessage('Invalid Latitude: Must be between -90.0 and 90.0 degrees.');
+      return;
+    }
+
+    if (longitude < -180 || longitude > 180) {
+      setErrorMessage('Invalid Longitude: Must be between -180.0 and 180.0 degrees.');
+      return;
+    }
+
     if (!isLocationConfirmed) {
-      setErrorMessage('Please confirm your physical shop location on the map in Step 3 before saving.');
+      setErrorMessage('Please click "Confirm Shop Location" in Step 3 to explicitly lock your GPS coordinates.');
+      return;
+    }
+
+    // Consistency check: block if city and coordinates mismatch severely
+    const mismatch = checkCityCoordinateConsistency(city, latitude, longitude);
+    if (mismatch) {
+      setErrorMessage(mismatch);
       return;
     }
 
     setLoading(true);
 
     try {
-      // Step 4: Create Pharmacy & Associate with Logged-in Pharmacist
       const res = await setupPharmacy({
         name: shopName.trim(),
         ownerName: ownerName.trim(),
@@ -113,20 +196,20 @@ export const PharmacySetup = () => {
         longitude,
       });
 
-      // On completion, open the dashboard
       if (res?.success) {
         navigate('/pharmacist/dashboard', { replace: true });
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Failed to complete pharmacy setup.');
+      setErrorMessage(err.message || 'Failed to save pharmacy details. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-900 py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div className="max-w-2xl mx-auto w-full space-y-6">
+        
         {/* Step Progress Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex w-12 h-12 rounded-2xl bg-blue-600 text-white items-center justify-center font-bold text-2xl shadow-xl shadow-blue-500/20 mb-1">
@@ -157,6 +240,28 @@ export const PharmacySetup = () => {
           <div className="bg-rose-500/20 border border-rose-500/30 text-rose-200 text-xs p-3.5 rounded-2xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
             <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {cityMismatchWarning && (
+          <div className="bg-amber-500/20 border border-amber-500/30 text-amber-200 text-xs p-3.5 rounded-2xl flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">City & Map Pin Discrepancy</p>
+              <p className="text-[11px] text-amber-100/90 mt-0.5">{cityMismatchWarning}</p>
+            </div>
+          </div>
+        )}
+
+        {addressInvalidatedWarning && (
+          <div className="bg-rose-500/20 border border-rose-500/30 text-rose-200 text-xs p-3.5 rounded-2xl flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Address Modified — Location Re-Confirmation Required</p>
+              <p className="text-[11px] text-rose-100/90 mt-0.5">
+                You modified the pharmacy address fields after confirming your pin. To ensure address and GPS accuracy, the previous confirmation was invalidated. Please scroll to Step 3 and click <strong>Confirm Shop Location</strong> to lock the pin for the updated address.
+              </p>
+            </div>
           </div>
         )}
 
@@ -219,31 +324,15 @@ export const PharmacySetup = () => {
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="10-digit mobile number"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">
-                  Official Pharmacy Email
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="pharmacy@example.com"
+                    placeholder="e.g. 9876543210"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block font-medium text-slate-300 mb-1">
-                  Pharmacy Drug License Number *
+                  Drug License Number *
                 </label>
                 <div className="relative">
                   <FileText className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -252,15 +341,15 @@ export const PharmacySetup = () => {
                     required
                     value={licenseNumber}
                     onChange={(e) => setLicenseNumber(e.target.value)}
-                    placeholder="e.g. DL-KA-2026-XXXXX"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. 20B/21B DL-KA-2026-XXXX"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                   />
                 </div>
               </div>
 
               <div className="sm:col-span-2">
                 <label className="block font-medium text-slate-300 mb-1">
-                  Full Street / Building Address *
+                  Street Address / Door No / Landmark *
                 </label>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -269,7 +358,7 @@ export const PharmacySetup = () => {
                     required
                     value={fullAddress}
                     onChange={(e) => setFullAddress(e.target.value)}
-                    placeholder="Street / Shop Address"
+                    placeholder="Shop #12, Ground Floor, Main Road..."
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -284,7 +373,7 @@ export const PharmacySetup = () => {
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Bengaluru"
+                  placeholder="e.g. Hyderabad"
                   className="w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
@@ -298,7 +387,7 @@ export const PharmacySetup = () => {
                   required
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  placeholder="Karnataka"
+                  placeholder="e.g. Telangana"
                   className="w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
@@ -312,7 +401,7 @@ export const PharmacySetup = () => {
                   required
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  placeholder="560038"
+                  placeholder="e.g. 500081"
                   className="w-full px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
@@ -327,19 +416,20 @@ export const PharmacySetup = () => {
               isConfirmed={isLocationConfirmed}
               setIsConfirmed={setIsLocationConfirmed}
               onLocationConfirmed={handleLocationConfirmed}
+              addressHint={`${fullAddress} ${city} ${state} ${pincode}`.trim()}
             />
           </div>
 
           {/* Step 4: Submission */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
             <p className="text-xs text-slate-400">
-              Only you will have administrative access to this pharmacy's private records.
+              Only licensed pharmacists have access to inventory and billing for this pharmacy.
             </p>
 
             <button
               type="submit"
-              disabled={loading || !isLocationConfirmed}
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+              disabled={loading || !isLocationConfirmed || latitude === null}
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>{loading ? 'Saving Pharmacy...' : 'Save Pharmacy & Continue'}</span>
               <ArrowRight className="w-4 h-4" />

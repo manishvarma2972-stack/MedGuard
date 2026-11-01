@@ -19,6 +19,17 @@ import { calculateDistanceKm, getGoogleMapsDirectionsUrl } from '../../utils/geo
 import { usePharmacy } from '../../context/PharmacyContext';
 import { publicApi } from '../../api/publicApi';
 
+const CUSTOMER_POPULAR_CITIES = [
+  { name: 'Hyderabad (Hitec City)', lat: 17.4435, lng: 78.3772 },
+  { name: 'Hyderabad (Secunderabad)', lat: 17.4399, lng: 78.4983 },
+  { name: 'Bengaluru (Indiranagar)', lat: 12.9784, lng: 77.6408 },
+  { name: 'Bengaluru (Koramangala)', lat: 12.9352, lng: 77.6245 },
+  { name: 'Visakhapatnam', lat: 17.7286, lng: 83.3188 },
+  { name: 'Mumbai (Bandra)', lat: 19.0596, lng: 72.8295 },
+  { name: 'Delhi (CP)', lat: 28.6304, lng: 77.2177 },
+  { name: 'Chennai (T. Nagar)', lat: 13.0418, lng: 80.2341 },
+];
+
 export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
   const navigate = useNavigate();
   const { user, medicines, inventory, batches, isAuthenticated, isEmailVerified, isSetupComplete } = usePharmacy();
@@ -107,7 +118,7 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
             id: row.pharmacy_id,
             name: row.pharmacy_name,
             address: row.pharmacy_address || '',
-            phone: row.pharmacy_phone || '+91 98765 43210',
+            phone: row.pharmacy_phone || '',
             latitude: parseFloat(row.pharmacy_lat),
             longitude: parseFloat(row.pharmacy_lng),
           },
@@ -139,16 +150,16 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Banner / Public Customer Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
-              🛡️
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-glow">
+              <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-slate-900 tracking-tight text-lg">MedGuard AI</span>
-                <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="bg-teal-50 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200 uppercase tracking-wider">
                   Live Stock Radar
                 </span>
               </div>
@@ -156,7 +167,13 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => navigate('/')}
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors hidden sm:block"
+            >
+              Home
+            </button>
             <button
               onClick={() => {
                 if (onSwitchToPharmacist) {
@@ -171,7 +188,7 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
                   navigate('/pharmacist/dashboard');
                 }
               }}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium px-3.5 py-2 rounded-lg transition-all shadow-sm flex items-center gap-1.5"
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
             >
               <span>Pharmacist Portal</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -227,15 +244,41 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
             </button>
           </div>
 
-          {/* Location Status */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-blue-200 pt-2">
-            <span className="flex items-center gap-1 font-medium text-white">
-              <MapPin className="w-3.5 h-3.5 text-rose-400" />
-              Location:
-            </span>
-            <span className="bg-blue-900/60 text-blue-100 border border-blue-400/20 px-2.5 py-1 rounded-md font-semibold">
-              {userLocation.name}
-            </span>
+          {/* Location Status & City Switcher */}
+          <div className="space-y-2 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-blue-200">
+              <span className="flex items-center gap-1 font-medium text-white">
+                <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                Searching Near:
+              </span>
+              <span className="bg-blue-900/60 text-blue-100 border border-blue-400/20 px-2.5 py-1 rounded-md font-semibold font-mono">
+                {userLocation.name}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
+              <span className="text-[11px] text-blue-200">Switch city:</span>
+              {CUSTOMER_POPULAR_CITIES.map((c, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setUserLocation({
+                      name: c.name,
+                      lat: c.lat,
+                      lng: c.lng,
+                    });
+                    setLocationError(null);
+                  }}
+                  className={`text-[11px] px-2 py-0.5 rounded-full border transition-all ${
+                    userLocation.name === c.name
+                      ? 'bg-white text-blue-900 border-white font-bold shadow-xs'
+                      : 'bg-blue-800/60 hover:bg-blue-700/80 text-blue-200 border-blue-500/30'
+                  }`}
+                >
+                  {c.name.split(' (')[0]}
+                </button>
+              ))}
+            </div>
           </div>
 
           {locationError && (
@@ -389,10 +432,12 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
                       <p className="text-xs text-slate-500 leading-snug pl-5 line-clamp-2">
                         {item.pharmacy.address}
                       </p>
-                      <p className="text-xs text-slate-500 pl-5 flex items-center gap-1 pt-0.5">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        <span>{item.pharmacy.phone}</span>
-                      </p>
+                      {item.pharmacy.phone && (
+                        <p className="text-xs text-slate-500 pl-5 flex items-center gap-1 pt-0.5">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{item.pharmacy.phone}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -408,14 +453,16 @@ export const CustomerDiscovery = ({ onSwitchToPharmacist }) => {
                       <span>Get Google Maps Directions</span>
                     </a>
 
-                    <a
-                      href={`tel:${item.pharmacy.phone}`}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 px-3.5 rounded-xl flex items-center justify-center gap-1 transition-colors"
-                      title="Call Pharmacy"
-                    >
-                      <Phone className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Call</span>
-                    </a>
+                    {item.pharmacy.phone && (
+                      <a
+                        href={`tel:${item.pharmacy.phone}`}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 px-3.5 rounded-xl flex items-center justify-center gap-1 transition-colors"
+                        title="Call Pharmacy"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Call</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               );

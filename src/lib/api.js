@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// In development, route through Vite proxy (/api) to bridge localhost:5173 to Render and avoid CORS origin rejection.
+// In production (Render frontend), use the configured VITE_API_URL or default to Render backend.
+const API_BASE_URL = import.meta.env.DEV
+  ? '/api'
+  : (import.meta.env.VITE_API_URL || 'https://medguard-d48g.onrender.com/api');
 
 /**
  * MedGuard Unified API Client
