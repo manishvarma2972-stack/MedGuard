@@ -17,6 +17,7 @@ export const PharmacistRegister = () => {
   const { registerPharmacist, resendVerificationEmail } = usePharmacy();
 
   // Basic account info fields
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,6 +38,10 @@ export const PharmacistRegister = () => {
     setResendNotice(null);
 
     // Validations
+    if (!fullName.trim()) {
+      setErrorMessage('Please enter your full name.');
+      return;
+    }
     if (!email.trim() || !email.includes('@')) {
       setErrorMessage('Please enter a valid email address.');
       return;
@@ -59,8 +64,11 @@ export const PharmacistRegister = () => {
 
     try {
       await registerPharmacist({
+        fullName: fullName.trim(),
+        name: fullName.trim(),
         email: email.trim(),
         password,
+        phone: cleanPhone,
         mobileNumber: cleanPhone,
       });
 
@@ -75,7 +83,7 @@ export const PharmacistRegister = () => {
 
   const handleModalOk = () => {
     setShowVerifyModal(false);
-    navigate('/pharmacist/login');
+    navigate('/pharmacist/setup');
   };
 
   const handleResend = async () => {
@@ -122,6 +130,24 @@ export const PharmacistRegister = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {/* Full Name */}
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">
+                Full Name / Pharmacist Name *
+              </label>
+              <div className="relative">
+                <UserCheck className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Dr. Rajesh Sharma"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
               <label className="block font-medium text-slate-300 mb-1">
@@ -258,7 +284,7 @@ export const PharmacistRegister = () => {
                 onClick={handleModalOk}
                 className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
-                <span>OK</span>
+                <span>Proceed to Pharmacy Setup →</span>
               </button>
 
               <button

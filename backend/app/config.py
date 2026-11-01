@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "noreply@medguard.io"
 
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,https://medguard-frontend.onrender.com"
     STORAGE_DIR: str = str(BACKEND_DIR / "storage")
 
     @property

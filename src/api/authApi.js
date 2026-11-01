@@ -1,12 +1,17 @@
 import apiClient from './axios';
 
 export const authApi = {
-  register: async ({ email, password, fullName, phone }) => {
+  register: async (payload = {}) => {
+    const { email, password } = payload;
+    const resolvedName = payload.fullName || payload.name || '';
+    const resolvedPhone = payload.phone || payload.mobileNumber || '';
     const res = await apiClient.post('/auth/register', {
-      email,
+      email: (email || '').trim(),
       password,
-      fullName,
-      phone,
+      fullName: resolvedName,
+      name: resolvedName,
+      phone: resolvedPhone,
+      mobileNumber: resolvedPhone,
     });
     return res.data;
   },

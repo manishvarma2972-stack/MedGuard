@@ -14,11 +14,23 @@ def register_user(db: Session, req: UserRegisterRequest) -> TokenResponse:
             detail="A user with this email address already exists. Please log in.",
         )
 
+    # Resolve name with smart fallbacks: fullName -> name -> email username
+    raw_name = req.fullName or req.name
+    if raw_name and raw_name.strip():
+        resolved_name = raw_name.strip()
+    else:
+        email_prefix = req.email.split("@")[0].replace(".", " ").replace("_", " ").replace("-", " ")
+        resolved_name = email_prefix.title().strip() or "Pharmacist"
+
+    # Resolve phone with fallback: phone or mobileNumber
+    raw_phone = req.phone or req.mobileNumber
+    resolved_phone = raw_phone.strip() if raw_phone else None
+
     new_user = User(
         email=req.email.lower().strip(),
         password_hash=hash_password(req.password),
-        name=req.fullName.strip(),
-        phone=req.phone.strip() if req.phone else None,
+        name=resolved_name,
+        phone=resolved_phone,
         role="pharmacist",
         is_active=True,
         is_verified=True,

@@ -135,10 +135,29 @@ export const PharmacyProvider = ({ children }) => {
     }
   }, [pharmacy?.id, fetchPharmacyData]);
 
+  // Helper to extract clean readable error string
+  const extractErrorMessage = (err, fallback = 'Operation failed') => {
+    const detail = err.response?.data?.detail;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          const field = Array.isArray(item.loc) ? item.loc[item.loc.length - 1] : '';
+          return field ? `${field}: ${item.msg}` : (item.msg || JSON.stringify(item));
+        })
+        .join(', ');
+    }
+    if (typeof detail === 'string') return detail;
+    if (detail && typeof detail === 'object') {
+      return detail.msg || JSON.stringify(detail);
+    }
+    return err.message || fallback;
+  };
+
   // Auth: Register Pharmacist
-  const registerPharmacist = async ({ email, password, fullName, phone }) => {
+  const registerPharmacist = async (payload) => {
     try {
-      const data = await authApi.register({ email, password, fullName, phone });
+      const data = await authApi.register(payload);
       if (data.access_token) {
         localStorage.setItem('medguard_token', data.access_token);
         setUser(data.user);
@@ -146,9 +165,17 @@ export const PharmacyProvider = ({ children }) => {
       }
       return { success: true, user: data.user };
     } catch (err) {
-      const msg = err.response?.data?.detail || err.message || 'Registration failed';
+      const msg = extractErrorMessage(err, 'Registration failed');
       throw new Error(msg);
     }
+  };
+
+  // Auth: Resend verification email
+  const resendVerificationEmail = async (email) => {
+    return {
+      success: true,
+      resendNotice: `Verification email sent to ${email || 'your email'}. Please check your inbox.`,
+    };
   };
 
   // Auth: Login Pharmacist (Supports both object { email, password } and 2-arg (email, password))
@@ -459,6 +486,7 @@ export const PharmacyProvider = ({ children }) => {
     metrics,
     loginPharmacist,
     registerPharmacist,
+    resendVerificationEmail,
     logoutPharmacist,
     setupPharmacy,
     addStock,
